@@ -63,35 +63,34 @@ button {
     transition: transform .1s ease, box-shadow .2s ease;
 }
 
-/* Number buttons */
+
 .btn {
     background: #dfe6e9;
 }
 
-/* Operators */
+
 .op {
     background: #74b9ff;
     color: white;
 }
 
-/* Scientific buttons */
+
 .sci {
     background: #a29bfe;
     color: white;
 }
 
-/* Equals button */
 #equals {
     background: #55efc4;
 }
 
-/* Clear button */
+
 #clear {
     background: #ff7675;
     color: white;
 }
 
-/* subtle animations */
+
 button:hover {
     transform: scale(1.07);
 }
@@ -99,9 +98,4 @@ button:hover {
 button:active {
     transform: scale(0.95);
     box-shadow: 0 0 8px rgba(0,0,0,0.3);
-}
-
-footer p {
-    color: #777;
-    font-size: 14px;
 }
