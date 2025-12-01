@@ -1,117 +1,245 @@
-const display = document.getElementById("display") as HTMLInputElement;
+const expressionDisplay = document.getElementById("expressionDisplay") as HTMLElement;
+const resultDisplay = document.getElementById("resultDisplay") as HTMLElement;
 
-let expression: string = ""; // what is shown on screen
-let firstNumber: number | null = null;
-let operator: string | null = null;
-let waitingForSecond: boolean = false;
+let expressionTokens: string[] = [];
+let currentInput = "";
+let accumulator: number | null = null;
+let pendingOperator: string | null = null;
+let lastExpressionText: string | null = null;
+let lastResult: number | null = null;
+let justEvaluated = false;
 
-// --------------------------
-// Helper to refresh display
-// --------------------------
+const operators = new Set(["+", "-", "*", "/", "^"]);
+
+function formatNumber(value: number): string {
+    const rounded = parseFloat(value.toFixed(10));
+    if (!Number.isFinite(rounded)) {
+        return "Error";
+    }
+    return rounded.toString();
+}
+
 function updateDisplay() {
-    display.value = expression;
-}
+    const activeExpression = justEvaluated && lastExpressionText
+        ? lastExpressionText
+        : buildActiveExpression();
 
-// --------------------------
-// Handle number input
-// --------------------------
-function handleNumber(num: string) {
-    expression += num;
-    updateDisplay();
-}
+    expressionDisplay.textContent = activeExpression || "0";
 
-// --------------------------
-// Handle operator input
-// --------------------------
-function handleOperator(op: string) {
-    if (expression === "") return;
+    if (justEvaluated && lastResult !== null) {
+        resultDisplay.textContent = formatNumber(lastResult);
+        return;
+    }
 
-    if (!waitingForSecond) {
-        firstNumber = parseFloat(expression);
-        operator = op;
-        expression += " " + op + " ";
-        waitingForSecond = true;
+    if (currentInput !== "") {
+        resultDisplay.textContent = currentInput;
+    } else if (accumulator !== null) {
+        resultDisplay.textContent = formatNumber(accumulator);
     } else {
-        // replaces operator if user changes mind
-        expression = expression.slice(0, -3) + ` ${op} `;
-        operator = op;
+        resultDisplay.textContent = "0";
+    }
+}
+
+function buildActiveExpression(): string {
+    const tokens = [...expressionTokens];
+    if (currentInput) {
+        tokens.push(currentInput);
+    }
+    return tokens.join(" ").trim();
+}
+
+function clearStateAfterEvaluation() {
+    if (!justEvaluated) {
+        return;
+    }
+    expressionTokens = [];
+    pendingOperator = null;
+    accumulator = null;
+    lastExpressionText = null;
+    justEvaluated = false;
+}
+
+function handleNumber(num: string) {
+    clearStateAfterEvaluation();
+
+    if (num === "." && currentInput.includes(".")) {
+        return;
+    }
+
+    if (currentInput === "0" && num !== ".") {
+        currentInput = num;
+    } else {
+        currentInput += num;
     }
 
     updateDisplay();
 }
 
-// --------------------------
-// Evaluate expression
-// --------------------------
+function performOperation(a: number, b: number, op: string): number {
+    switch (op) {
+        case "+": return a + b;
+        case "-": return a - b;
+        case "*": return a * b;
+        case "/": return a / b;
+        case "^": return Math.pow(a, b);
+        default: return b;
+    }
+}
+
+function handleOperator(op: string) {
+    if (justEvaluated) {
+        expressionTokens = currentInput ? [currentInput] : [];
+        pendingOperator = null;
+        accumulator = currentInput ? parseFloat(currentInput) : null;
+        justEvaluated = false;
+        lastExpressionText = null;
+    }
+
+    if (currentInput === "" && accumulator === null) {
+        return;
+    }
+
+    if (currentInput !== "") {
+        const numericInput = parseFloat(currentInput);
+        if (isNaN(numericInput)) {
+            return;
+        }
+
+        if (accumulator === null) {
+            accumulator = numericInput;
+        } else if (pendingOperator) {
+            accumulator = performOperation(accumulator, numericInput, pendingOperator);
+        }
+
+        expressionTokens.push(currentInput);
+        currentInput = "";
+        lastResult = accumulator;
+    }
+
+    pendingOperator = op;
+
+    if (expressionTokens.length === 0 && accumulator !== null) {
+        expressionTokens.push(formatNumber(accumulator));
+    }
+
+    const lastToken = expressionTokens[expressionTokens.length - 1];
+    if (operators.has(lastToken)) {
+        expressionTokens[expressionTokens.length - 1] = op;
+    } else {
+        expressionTokens.push(op);
+    }
+
+    updateDisplay();
+}
+
 function calculate() {
-    if (!operator || firstNumber === null) return;
-
-    const parts = expression.split(" ");
-    const secondNumber = parseFloat(parts[2]);
-
-    if (isNaN(secondNumber)) return;
-
-    let result = 0;
-
-    switch (operator) {
-        case "+": result = firstNumber + secondNumber; break;
-        case "-": result = firstNumber - secondNumber; break;
-        case "*": result = firstNumber * secondNumber; break;
-        case "/": result = firstNumber / secondNumber; break;
-        case "^": result = Math.pow(firstNumber, secondNumber); break;
+    if (pendingOperator === null || accumulator === null || currentInput === "") {
+        return;
     }
 
-    expression = result.toString();
-    firstNumber = null;
-    operator = null;
-    waitingForSecond = false;
+    const numericInput = parseFloat(currentInput);
+    if (isNaN(numericInput)) {
+        return;
+    }
+
+    expressionTokens.push(currentInput);
+    const expressionText = `${expressionTokens.join(" ")} =`;
+    const result = performOperation(accumulator, numericInput, pendingOperator);
+
+    lastResult = result;
+    lastExpressionText = expressionText;
+    expressionTokens = [];
+    currentInput = formatNumber(result);
+    accumulator = null;
+    pendingOperator = null;
+    justEvaluated = true;
 
     updateDisplay();
 }
 
-// --------------------------
-// Clear
-// --------------------------
 function clearAll() {
-    expression = "";
-    firstNumber = null;
-    operator = null;
-    waitingForSecond = false;
+    expressionTokens = [];
+    currentInput = "";
+    accumulator = null;
+    pendingOperator = null;
+    lastExpressionText = null;
+    lastResult = null;
+    justEvaluated = false;
     updateDisplay();
 }
 
-// --------------------------
-// Scientific functions
-// --------------------------
+function degreesToRadians(value: number): number {
+    return (value * Math.PI) / 180;
+}
+
 function scientific(fn: string) {
-    const num = parseFloat(expression);
-    if (isNaN(num)) return;
+    if (currentInput === "" && lastResult !== null && !justEvaluated) {
+        currentInput = formatNumber(lastResult);
+    }
+
+    const sourceValue = currentInput !== ""
+        ? parseFloat(currentInput)
+        : lastResult ?? accumulator;
+
+    if (sourceValue === null || isNaN(sourceValue)) {
+        return;
+    }
 
     let result = 0;
+    let label = "";
 
     switch (fn) {
-        case "square": result = num * num; break;
-        case "root": result = Math.sqrt(num); break;
-        case "log": result = Math.log10(num); break;
-        case "sin": result = Math.sin(num); break;
-        case "cos": result = Math.cos(num); break;
-        case "tan": result = Math.tan(num); break;
+        case "square":
+            result = sourceValue * sourceValue;
+            label = `square(${formatNumber(sourceValue)})`;
+            break;
+        case "root":
+            result = Math.sqrt(sourceValue);
+            label = `sqrt(${formatNumber(sourceValue)})`;
+            break;
+        case "log":
+            result = Math.log10(sourceValue);
+            label = `log(${formatNumber(sourceValue)})`;
+            break;
+        case "sin":
+            result = Math.sin(degreesToRadians(sourceValue));
+            label = `sin(${formatNumber(sourceValue)})`;
+            break;
+        case "cos":
+            result = Math.cos(degreesToRadians(sourceValue));
+            label = `cos(${formatNumber(sourceValue)})`;
+            break;
+        case "tan":
+            result = Math.tan(degreesToRadians(sourceValue));
+            label = `tan(${formatNumber(sourceValue)})`;
+            break;
         case "power":
-            firstNumber = num;
-            operator = "^";
-            expression += " ^ ";
-            waitingForSecond = true;
-            updateDisplay();
+            if (currentInput === "") {
+                currentInput = formatNumber(sourceValue);
+            }
+            handleOperator("^");
+            return;
+        default:
             return;
     }
 
-    expression = result.toString();
+    if (!Number.isFinite(result)) {
+        resultDisplay.textContent = "Error";
+        expressionDisplay.textContent = label;
+        return;
+    }
+
+    lastResult = result;
+    lastExpressionText = label;
+    expressionTokens = [];
+    currentInput = formatNumber(result);
+    accumulator = null;
+    pendingOperator = null;
+    justEvaluated = true;
+
     updateDisplay();
 }
 
-// --------------------------
-// Button listeners
-// --------------------------
 document.querySelectorAll(".btn").forEach(btn => {
     btn.addEventListener("click", () => {
         handleNumber((btn as HTMLElement).dataset.num!);
@@ -133,24 +261,34 @@ document.querySelectorAll(".sci").forEach(btn => {
     });
 });
 
-// --------------------------
-// Keyboard Support
-// --------------------------
-document.addEventListener("keydown", (e) => {
-    const key = e.key;
+document.addEventListener("keydown", (event) => {
+    const { key } = event;
 
-    if (!isNaN(Number(key))) {
+    if (!isNaN(Number(key)) || key === ".") {
         handleNumber(key);
+        return;
     }
 
-    if (["+", "-", "*", "/"].includes(key)) {
+    if (operators.has(key)) {
         handleOperator(key);
+        return;
     }
 
-    if (key === "Enter") calculate();
+    if (key === "Enter") {
+        event.preventDefault();
+        calculate();
+    }
+
     if (key === "Backspace") {
-        expression = expression.slice(0, -1);
+        if (currentInput !== "") {
+            currentInput = currentInput.slice(0, -1);
+        }
         updateDisplay();
     }
-    if (key === "Escape") clearAll();
+
+    if (key === "Escape") {
+        clearAll();
+    }
 });
+
+clearAll();
