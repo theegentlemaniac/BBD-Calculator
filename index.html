@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Semantic Scientific Calculator</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<header>
+    <h1>Semantic Scientific Calculator</h1>
+</header>
+
+<main>
+    <section>
+        <input id="display" disabled aria-label="Calculator display" />
+    </section>
+
+    <section>
+        <table>
+            <tbody>
+
+                <tr>
+                    <td><button class="btn" data-num="7">7</button></td>
+                    <td><button class="btn" data-num="8">8</button></td>
+                    <td><button class="btn" data-num="9">9</button></td>
+                    <td><button class="op" data-op="/">÷</button></td>
+                </tr>
+
+                <tr>
+                    <td><button class="btn" data-num="4">4</button></td>
+                    <td><button class="btn" data-num="5">5</button></td>
+                    <td><button class="btn" data-num="6">6</button></td>
+                    <td><button class="op" data-op="*">×</button></td>
+                </tr>
+
+                <tr>
+                    <td><button class="btn" data-num="1">1</button></td>
+                    <td><button class="btn" data-num="2">2</button></td>
+                    <td><button class="btn" data-num="3">3</button></td>
+                    <td><button class="op" data-op="-">−</button></td>
+                </tr>
+
+                <tr>
+                    <td><button class="btn" data-num="0">0</button></td>
+                    <td><button class="btn" data-num=".">.</button></td>
+                    <td><button id="equals">=</button></td>
+                    <td><button class="op" data-op="+">+</button></td>
+                </tr>
+
+                <tr>
+                    <td><button class="sci" data-fn="square">x²</button></td>
+                    <td><button class="sci" data-fn="root">√x</button></td>
+                    <td><button class="sci" data-fn="power">xʸ</button></td>
+                    <td><button class="sci" data-fn="log">log</button></td>
+                </tr>
+
+                <tr>
+                    <td><button class="sci" data-fn="sin">sin</button></td>
+                    <td><button class="sci" data-fn="cos">cos</button></td>
+                    <td><button class="sci" data-fn="tan">tan</button></td>
+                    <td><button id="clear">C</button></td>
+                </tr>
+
+            </tbody>
+        </table>
+    </section>
+</main>
+
+<footer>
+    <p>Made with ❤️ by Ndumiso</p>
+</footer>
+
+<script src="script.js"></script>
+</body>
+</html>

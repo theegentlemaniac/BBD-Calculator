@@ -1,0 +1,90 @@
+body {
+    font-family: Arial, sans-serif;
+    text-align: center;
+    background: #f3f3f3;
+    margin: 0;
+    padding: 0;
+}
+
+header, footer {
+    padding: 15px;
+}
+
+h1 {
+    font-size: 26px;
+    margin-top: 20px;
+}
+
+main {
+    margin: 20px auto;
+    width: 340px;
+}
+
+#display {
+    width: 100%;
+    height: 50px;
+    font-size: 26px;
+    text-align: right;
+    padding: 6px;
+    border-radius: 10px;
+    border: 2px solid #ccc;
+    background: #ffffff;
+}
+
+table {
+    width: 100%;
+    border-spacing: 10px;
+}
+
+button {
+    width: 100%;
+    padding: 18px;
+    font-size: 20px;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: transform .1s ease, box-shadow .2s ease;
+}
+
+/* Number buttons */
+.btn {
+    background: #dfe6e9;
+}
+
+/* Operators */
+.op {
+    background: #74b9ff;
+    color: white;
+}
+
+/* Scientific buttons */
+.sci {
+    background: #a29bfe;
+    color: white;
+}
+
+/* Equals button */
+#equals {
+    background: #55efc4;
+}
+
+/* Clear button */
+#clear {
+    background: #ff7675;
+    color: white;
+}
+
+/* subtle animations */
+button:hover {
+    transform: scale(1.07);
+}
+
+button:active {
+    transform: scale(0.95);
+    box-shadow: 0 0 8px rgba(0,0,0,0.3);
+}
+
+footer p {
+    color: #777;
+    font-size: 14px;
+}
